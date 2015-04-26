@@ -96,7 +96,7 @@ class Selection(object):
     def __hash__(self):
         r'''Hashes selection.
 
-        Required to be explicitely re-defined on Python 3 if __eq__ changes.
+        Required to be explicitly re-defined on Python 3 if __eq__ changes.
 
         Returns integer.
         '''
@@ -465,14 +465,17 @@ class Selection(object):
             for component in self
             )
 
-    def get_spanners(self, prototype=None):
+    def get_spanners(self, prototype=None, in_parentage=False):
         r'''Gets spanners attached to any component in selection.
 
         Returns set.
         '''
         result = set()
         for component in self:
-            spanners = component._get_spanners(prototype=prototype)
+            spanners = component._get_spanners(
+                prototype=prototype,
+                in_parentage=in_parentage,
+                )
             result.update(spanners)
         return result
 
