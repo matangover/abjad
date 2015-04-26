@@ -22,7 +22,6 @@ class Accidental(AbjadObject):
         's': 'sharp',
         'qs': 'quarter-sharp',
         '': 'natural',
-        '!': 'forced natural',
         'qf': 'quarter-flat',
         'f': 'flat',
         'tqf': 'three-quarters flat',
@@ -35,7 +34,6 @@ class Accidental(AbjadObject):
         'f': -1,
         'qf': -0.5,
         '': 0,
-        '!': 0,
         'qs': 0.5,
         's': 1,
         'tqs': 1.5,
@@ -48,7 +46,6 @@ class Accidental(AbjadObject):
         'f': 'b',
         'qf': '~',
         '': '',
-        '!': '!',
         'qs': '+',
         's': '#',
         'tqs': '#+',
@@ -59,8 +56,7 @@ class Accidental(AbjadObject):
         ([s]{1,2}   # s or ss for sharp or double sharp
         |[f]{1,2}   # or f or ff for flat or double flat
         |t?q?[fs]   # or qs, qf, tqs, tqf for quartertone accidentals
-        |           # or empty string for no natural
-        )!?         # plus optional ! for forced printing of accidental
+        |)          # or empty string for no natural
         """
 
     _alphabetic_accidental_regex = re.compile(
@@ -74,7 +70,6 @@ class Accidental(AbjadObject):
         'sharp'                   : 's',
         'quarter sharp'           : 'qs',
         'natural'                 : '',
-        'forced natural'          : '!',
         'quarter flat'            : 'qf',
         'flat'                    : 'f',
         'three-quarters flat'     : 'tqf',
@@ -133,53 +128,57 @@ class Accidental(AbjadObject):
         }
 
     __slots__ = (
-        '_abbreviation',
-        '_is_adjusted',
-        '_name',
+        #'_abbreviation',
+        #'_is_adjusted',
+        #'_name',
         '_semitones',
-        '_symbolic_string',
+        #'_symbolic_string',
         )
 
     ### INITIALIZER ##
 
     def __init__(self, arg=''):
-        from abjad.tools import pitchtools
+#        from abjad.tools import pitchtools
         # initialize symbolic string from arg
         if self.is_abbreviation(arg):
-            _abbreviation = arg
+            abbreviation = arg
         elif self.is_symbolic_string(arg):
-            _abbreviation = \
+            abbreviation = \
                 self._symbolic_string_to_abbreviation[
                     arg]
         elif arg in self._all_accidental_names:
-            _abbreviation = \
+            abbreviation = \
                 self._name_to_abbreviation[arg]
         elif arg in self._all_accidental_semitone_values:
-            _abbreviation = \
+            abbreviation = \
                 self._semitones_to_abbreviation[arg]
         elif isinstance(arg, type(self)):
-            _abbreviation = \
+            abbreviation = \
                 arg.abbreviation
         elif isinstance(arg, type(None)):
-            _abbreviation = ''
+            abbreviation = ''
         else:
             message = 'can not initialize accidental from value: %s'
             raise ValueError(message % arg)
-        self._abbreviation = \
-            _abbreviation
+
+        #self._abbreviation = \
+        #    _abbreviation
+        self._semitones = self._abbreviation_to_semitones[
+            abbreviation]
+
         # initialize derived attributes
-        _semitones = self._abbreviation_to_semitones[
-            self.abbreviation]
-        self._semitones = _semitones
-        _name = self._abbreviation_to_name[
-            self.abbreviation]
-        self._name = _name
-        _is_adjusted = not self.semitones == 0
-        self._is_adjusted = _is_adjusted
-        _symbolic_string = \
-            self._abbreviation_to_symbolic_string[
-                self.abbreviation]
-        self._symbolic_string = _symbolic_string
+#        _semitones = self._abbreviation_to_semitones[
+#            self.abbreviation]
+#        self._semitones = _semitones
+#        _name = self._abbreviation_to_name[
+#            self.abbreviation]
+#        self._name = _name
+#        _is_adjusted = not self.semitones == 0
+#        self._is_adjusted = _is_adjusted
+#        _symbolic_string = \
+#            self._abbreviation_to_symbolic_string[
+#                self.abbreviation]
+#        self._symbolic_string = _symbolic_string
 
     ### SPECIAL METHODS ###
 
@@ -308,7 +307,7 @@ class Accidental(AbjadObject):
 
     @property
     def _lilypond_format(self):
-        return self._abbreviation
+        return self.abbreviation
 
     @property
     def _storage_format_specification(self):
@@ -376,7 +375,7 @@ class Accidental(AbjadObject):
 
         Returns string.
         '''
-        return self._abbreviation
+        return self._semitones_to_abbreviation[self.semitones]
 
     @property
     def is_adjusted(self):
@@ -391,7 +390,7 @@ class Accidental(AbjadObject):
 
         Returns boolean.
         '''
-        return self._is_adjusted
+        return self._semitones != 0
 
     @property
     def name(self):
@@ -405,7 +404,9 @@ class Accidental(AbjadObject):
 
         Returns string.
         '''
-        return self._name
+        abbreviation = self._semitones_to_abbreviation[self.semitones]
+        name = self._abbreviation_to_name[abbreviation]
+        return name
 
     @property
     def semitones(self):
@@ -433,4 +434,6 @@ class Accidental(AbjadObject):
 
         Returns string.
         '''
-        return self._symbolic_string
+        abbreviation = self._semitones_to_abbreviation[self.semitones]
+        symbolic_string = self._abbreviation_to_symbolic_string[abbreviation]
+        return symbolic_string
